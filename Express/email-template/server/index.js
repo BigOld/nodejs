@@ -19,8 +19,16 @@ app.use(api)
 
 app.use('/xhr/v1', templateRouter)
 
+app.use((req, res, next) => {
+  const err = new Error('Not Found')
+  err.status = 404
+  next(err)
+})
+
 
 
 app.listen(8080, () => {
   console.log('server is running on 8080')
 })
+
+module.exports = app
