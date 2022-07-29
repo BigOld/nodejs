@@ -19,3 +19,6 @@
   * morgan()
 * 为客户端提供跨域资源请求
   * cors()
+
+## JWT 身份认证
+https://www.yuque.com/lipengzhou/dev/mzmagk

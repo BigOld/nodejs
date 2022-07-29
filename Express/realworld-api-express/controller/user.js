@@ -1,9 +1,24 @@
+const { jwtSecret } = require('../config/config.default')
 const { User } = require('../model')
+const jwt = require('../util/jwt')
 
 // 用户登录
 exports.login = async (req, res) => {
   try {
-    res.send('login')
+    const user = req.user.toJSON() // 将 mongoose 的数据对象转换为 json
+    delete user.password
+
+    const token = await jwt.sign({
+      userId: user._id
+    }, jwtSecret, {
+      expiresIn: 60 * 60 * 24
+    })
+
+    delete user.password
+    res.status(200).json({
+      ...user,
+      token
+    })
   } catch (err) {
     next(err)
   }
@@ -13,7 +28,7 @@ exports.login = async (req, res) => {
 exports.register = async (req, res, next) => {
   try {
     // 1 获取请求体数据
-    
+
     // 2 数据验证
     // 2.1基本数据验证
     // 2.2业务数据验证
@@ -37,7 +52,9 @@ exports.register = async (req, res, next) => {
 // 获取当前登录用户
 exports.getCurrentUser = async (req, res) => {
   try {
-    res.send('getCurrentUser')
+    res.status(200).json({
+      user: req.user
+    })
   } catch (err) {
     next(err)
   }
