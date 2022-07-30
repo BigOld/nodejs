@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const baseModel = require('./base-model')
+const Schema = mongoose.Schema
 
 const articleSchema = new mongoose.Schema({
   ...baseModel,
@@ -22,6 +23,11 @@ const articleSchema = new mongoose.Schema({
   favoritesCount: {
     type: Number,
     default: 0
+  },
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
 })
 

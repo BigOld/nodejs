@@ -1,3 +1,5 @@
+const { Article, User } = require('../model')
+
 // 获取文章列表
 exports.getArticles = async (req, res) => {
   try {
@@ -9,7 +11,7 @@ exports.getArticles = async (req, res) => {
 
 
 // 获取用户关注的作者文章列表
-exports.getFeedArticles = async (req, res) => {
+exports.getFeedArticles = async (req, res, next) => {
   try {
     res.send('getFeedArticles')
   } catch (err) {
@@ -18,25 +20,37 @@ exports.getFeedArticles = async (req, res) => {
 }
 
 // 获取文章
-exports.getArticle = async (req, res) => {
+exports.getArticle = async (req, res, next) => {
   try {
-    res.send('getArticle')
+    const article = await Article.findById(req.params.articleId).populate('author')
+    if(!article) {
+      return res.status(404)
+    }
+    res.status(200).json({
+      article
+    })
   } catch (err) {
     next(err)
   }
 }
 
 // 创建文章
-exports.createArticle = async (req, res) => {
+exports.createArticle = async (req, res, next) => {
   try {
-    res.send('createArticle')
+    const article = new Article(req.body.article)
+    article.author = req.user._id
+    article.populate('author')
+    await article.save()
+    res.status(201).json({
+      article
+    })
   } catch (err) {
     next(err)
   }
 }
 
 // 更新文章
-exports.updateArticle = async (req, res) => {
+exports.updateArticle = async (req, res, next) => {
   try {
     res.send('updateArticle')
   } catch (err) {
@@ -45,7 +59,7 @@ exports.updateArticle = async (req, res) => {
 }
 
 // 删除文章
-exports.deleteArticle = async (req, res) => {
+exports.deleteArticle = async (req, res, next) => {
   try {
     res.send('deleteArticle')
   } catch (err) {
