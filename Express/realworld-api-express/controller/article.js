@@ -1,9 +1,40 @@
 const { Article, User } = require('../model')
 
 // 获取文章列表
-exports.getArticles = async (req, res) => {
+exports.getArticles = async (req, res, next) => {
   try {
-    res.send('getArticles')
+    const {
+      limit = 20,
+      offset = 0,
+      tag,
+      author
+    } = req.query
+
+    const filter = {}
+
+    if(tag) {
+      filter.tagList = tag
+    }
+
+    if(author) {
+      const user = await User.findOne({
+        username: author
+      })
+      filter.author = user ? user._id : null
+    }
+
+    const articles = await Article.find(filter) // 包含这个就可以
+      .populate('author')
+      .skip(Number.parseInt(offset)) // 跳过多少条
+      .limit(Number.parseInt(limit)) // 取多少条
+      .sort({
+        createAt: -1 // -1 倒序 1 升序
+      })
+    const articlesCount = articles.length
+    res.status(200).json({
+      articles,
+      articlesCount
+    })
   } catch (err) {
     next(err)
   }
@@ -22,7 +53,7 @@ exports.getFeedArticles = async (req, res, next) => {
 // 获取文章
 exports.getArticle = async (req, res, next) => {
   try {
-    const article = await Article.findById(req.params.articleId).populate('author')
+    const article = await Article.findById(req.params.articleId).populate('author') // 将该字段作为外键去author表查询并替换该字段
     if(!article) {
       return res.status(404)
     }
@@ -52,7 +83,15 @@ exports.createArticle = async (req, res, next) => {
 // 更新文章
 exports.updateArticle = async (req, res, next) => {
   try {
-    res.send('updateArticle')
+    const article = req.article
+    const bodyArticle = req.body.article
+    article.title = bodyArticle.title || article.title
+    article.description = bodyArticle.description || article.description
+    article.body = bodyArticle.body || article.body
+    await Article.save()
+    res.status(200).json({
+      article
+    })
   } catch (err) {
     next(err)
   }
